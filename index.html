@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>⚽ Live Bóng Đá Việt Nam</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    iframe {
+      margin-top: 20px;
+      width: 720px;
+      height: 405px;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+<h1>⚽ Live Bóng Đá Việt Nam ⚽</h1>
+<div id="video-container">
+  <p>Đang kiểm tra trận đấu...</p>
+</div>
+
+<script>
+const API_KEY = 'AIzaSyDUaEAdkfCAJQu1iUQQyd16uAYYWfjTX_8'; // 🔥 Điền API KEY của bạn vào đây
+const CHANNEL_ID = 'UCtP3bFpuG3JlvON2F2I2jTQ'; // 🔥 ID kênh cần lấy live
+let currentVideoId = "";
+
+async function fetchLiveVideo() {
+  try {
+    const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CHANNEL_ID}&eventType=live&type=video&key=${API_KEY}`;
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+
+    if (data.items && data.items.length > 0) {
+      const videoId = data.items[0].id.videoId;
+      if (currentVideoId !== videoId) {
+        console.log('Phát hiện live mới:', videoId);
+        currentVideoId = videoId;
+        showVideo(videoId);
+      }
+    } else {
+      console.log('Không có video live.');
+      if (!currentVideoId) {
+        document.getElementById('video-container').innerHTML = '<p>🔴 Hiện tại chưa có phát trực tiếp!</p>';
+      }
+    }
+  } catch (error) {
+    console.error('Lỗi khi fetch live:', error);
+    if (!currentVideoId) {
+      document.getElementById('video-container').innerHTML = '<p>🔴 Không thể kết nối!</p>';
+    }
+  }
+}
+
+function showVideo(videoId) {
+  const iframeHtml = `
+    <iframe id="ytplayer" src="https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1" allow="autoplay" allowfullscreen></iframe>
+  `;
+  document.getElementById('video-container').innerHTML = iframeHtml;
+  setTimeout(initYouTubeAPI, 1000); // Đợi iframe load xong rồi mới attach API
+}
+
+function initYouTubeAPI() {
+  if (typeof YT === 'undefined') {
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.body.appendChild(tag);
+  } else {
+    onYouTubeIframeAPIReady();
+  }
+}
+
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('ytplayer', {
+    events: {
+      'onStateChange': onPlayerStateChange
+    }
+  });
+}
+
+function onPlayerStateChange(event) {
+  if (event.data === YT.PlayerState.ENDED) {
+    console.log("Video kết thúc, tìm trận mới...");
+    currentVideoId = "";
+    fetchLiveVideo();
+  }
+}
+
+// Gọi lần đầu khi mở trang
+fetchLiveVideo();
+
+// Cứ 30 phút kiểm tra 1 lần
+setInterval(fetchLiveVideo, 1800000); // 1800000 ms = 30 phút
+</script>
+
+</body>
+</html>
