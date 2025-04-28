@@ -21,45 +21,104 @@
 </head>
 <body>
 
-  <h1>⚽ Live Bóng Đá Việt Nam ⚽</h1>
-  <div id="video-container">
-    <p>Đang tìm trận bóng đá phát trực tiếp...</p>
-  </div>
+<h1>⚽ Live Bóng Đá Việt Nam ⚽</h1>
+<div id="video-container">
+  <p>Đang tìm trận bóng đá phát trực tiếp...</p>
+</div>
 
 <script>
-const apiKey = 'AIzaSyDUaEAdkfCAJQu1iUQQyd16uAYYWfjTX_8'; // 👉 Thay YOUR_API_KEY_HERE bằng API Key của bạn
-const query = 'bóng đá';
+const apiKey = 'AIzaSyDUaEAdkfCAJQu1iUQQyd16uAYYWfjTX_8'; // 🔥 API KEY của bạn
+const channelIds = [
+  'UCk2YNy1wJKVxY_wJkaMf2Ow', // VTV Thể Thao
+  'UCIsvJ6JTXsI6U7rTZg4sRVA', // Next Sports
+  'UCmC9o_WLP-QA1z7nEN7aB0g', // VFF Channel
+  'UCzXAFyJydzWfF3Q5kSEu1-A', // On Sports
+  'UCRPL92H_gYVBvr_7RWopL5g', // FPT Play Sports
+  'UCg1WWbGldxzkOIFFp0miE_g'  // SCTV15
+];
+let currentVideoId = "";
 
-async function fetchLiveFootballVideos() {
+async function fetchLiveVideo() {
   try {
-    const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&eventType=live&type=video&maxResults=1&key=${apiKey}`;
-    const response = await fetch(apiUrl);
-    const data = await response.json();
+    for (const channelId of channelIds) {
+      const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&eventType=live&type=video&maxResults=1&key=${apiKey}`;
+      const response = await fetch(apiUrl);
+      const data = await response.json();
 
-    if (data.items && data.items.length > 0) {
-      const videoId = data.items[0].id.videoId;
-      const iframeHtml = `
-        <iframe id="ytplayer" 
-          src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0" 
-          allow="autoplay; encrypted-media" 
-          allowfullscreen>
-        </iframe>
+      if (data.items && data.items.length > 0) {
+        const videoId = data.items[0].id.videoId;
+        if (currentVideoId !== videoId) {
+          console.log("Đã tìm thấy video live mới:", videoId);
+          currentVideoId = videoId;
+          loadVideo(videoId);
+        } else {
+          console.log("Đã có live, không cần đổi.");
+        }
+        return; // Dừng tìm tiếp nếu đã có live
+      }
+    }
+    // Nếu quét hết mà không có live
+    if (!currentVideoId) {
+      document.getElementById('video-container').innerHTML = `
+        <p>🔴 Hiện tại kênh chưa phát trực tiếp!<br>Mời bạn quay lại sau nhé!</p>
       `;
-      document.getElementById('video-container').innerHTML = iframeHtml;
-    } else {
-      document.getElementById('video-container').innerHTML = '<p>🔴 Hiện tại kênh chưa phát trực tiếp!<br>Mời bạn quay lại sau nhé!</p>';
     }
   } catch (error) {
-    console.error('Lỗi khi fetch:', error);
-    document.getElementById('video-container').innerHTML = '<p>❗ Lỗi khi tìm kiếm video.</p>';
+    console.error('Lỗi fetch:', error);
+    document.getElementById('video-container').innerHTML = '<p>❗ Lỗi khi tìm video.</p>';
   }
 }
 
-// Gọi lần đầu khi mở trang
+function loadVideo(videoId) {
+  const iframeHtml = `
+    <iframe id="ytplayer" width="720" height="405"
+      src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&enablejsapi=1"
+      frameborder="0" allowfullscreen allow="autoplay"></iframe>
+  `;
+  document.getElementById('video-container').innerHTML = iframeHtml;
+
+  // Khởi động kiểm tra nếu video die
+  setTimeout(initYouTubeAPI, 2000);
+}
+
+function initYouTubeAPI() {
+  if (typeof YT === 'undefined') {
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.body.appendChild(tag);
+  } else {
+    onYouTubeIframeAPIReady();
+  }
+}
+
+function onYouTubeIframeAPIReady() {
+  if (typeof YT.Player !== 'undefined') {
+    new YT.Player('ytplayer', {
+      events: {
+        'onStateChange': onPlayerStateChange
+      }
+    });
+  }
+}
+
+function onPlayerStateChange(event) {
+  if (event.data === YT.PlayerState.ENDED || event.data === YT.PlayerState.UNSTARTED) {
+    console.log("Video đã kết thúc hoặc die, tìm live mới...");
+    currentVideoId = "";
+    fetchLiveVideo();
+  }
+}
+
+// Gọi lần đầu
 fetchLiveVideo();
 
-// Cứ 30 phút kiểm tra 1 lần
-setInterval(fetchLiveVideo, 1800000); // 1800000 ms = 30 phút
+// Cứ 30 phút kiểm tra 1 lần nếu đang không live
+setInterval(() => {
+  if (!currentVideoId) {
+    console.log("Không có live, kiểm tra lại...");
+    fetchLiveVideo();
+  }
+}, 1800000); // 30 phút
 </script>
 
 </body>
