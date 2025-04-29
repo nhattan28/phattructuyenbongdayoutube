@@ -136,7 +136,7 @@
 
 <div class="header-wrapper">
   <div class="header">
-    🎥 Chọn Kênh bóng đá | <span id="clock">--:--:-- | --/--/----</span>
+    🎥 Xem bóng đá vui vẻ 🎥
   </div>
 </div>
 
@@ -157,6 +157,7 @@
 <div class="clock" id="fixedClock"></div>
 
 <script>
+  
 // Đổi video
 function playVideo(videoId, btn) {
   const iframe = document.getElementById('videoPlayer');
@@ -181,7 +182,7 @@ function createSnowflake() {
 }
 setInterval(createSnowflake, 300);
 
-// Đồng hồ hiện giờ + Theme tự động
+// Đồng hồ hiện giờ 
 function updateClock() {
   const now = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"}));
   const h = now.getHours().toString().padStart(2, '0');
@@ -194,26 +195,10 @@ function updateClock() {
   const year = now.getFullYear();
   
   const fullTime = `${h}:${m}:${s} | ${d}, ${date}/${month}/${year}`;
-  document.getElementById('clock').textContent = fullTime;
+ 
   document.getElementById('fixedClock').textContent = fullTime;
-
-  // Theme
-  if (h >= 0 || h <= 21) {
-    document.body.style.background = getComputedStyle(document.documentElement).getPropertyValue('--bg-dark');
-    document.body.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-dark');
-    document.querySelectorAll('button').forEach(btn => {
-      btn.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--button-dark');
-      btn.style.color = getComputedStyle(document.documentElement).getPropertyValue('--button-dark');
-    });
-  } else {
-    document.body.style.background = getComputedStyle(document.documentElement).getPropertyValue('--bg-light');
-    document.body.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-light');
-    document.querySelectorAll('button').forEach(btn => {
-      btn.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--button-light');
-      btn.style.color = getComputedStyle(document.documentElement).getPropertyValue('--button-light');
-    });
-  }
 }
+
 setInterval(updateClock, 1000);
 updateClock();
 </script>
