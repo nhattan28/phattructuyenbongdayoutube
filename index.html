@@ -136,20 +136,19 @@
 
 <div class="header-wrapper">
   <div class="header">
-    🎥 Chọn Kênh bóng đá 🎥
+    🎥 Chọn Kênh bóng đá | <span id="clock">--:--:-- | --/--/----</span>
   </div>
 </div>
 
 <div class="buttons">
   <button onclick="playVideo('rS9CAtTpnVo', this)">Bóng đá hôm nay</button>
   <button onclick="playVideo('JCM0NIY4Yc4', this)">Cuồng thể thao</button>
-
 </div>
 
 <div class="video-container">
   <iframe 
     id="videoPlayer"
-    src="https://www.youtube.com/embed/QBvmeQr7Pbo?autoplay=1&mute=0"
+    src="https://www.youtube.com/embed/rS9CAtTpnVo?autoplay=1&mute=0"
     allow="autoplay; encrypted-media"
     allowfullscreen>
   </iframe>
@@ -161,14 +160,11 @@
 // Đổi video
 function playVideo(videoId, btn) {
   const iframe = document.getElementById('videoPlayer');
-  iframe.src = https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0;
+  iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0`;
   document.querySelectorAll('.buttons button').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 }
-document.addEventListener("DOMContentLoaded", () => {
-  const defaultBtn = document.querySelector('.buttons button');
-  playVideo('rS9CAtTpnVo', defaultBtn); // ID video bóng đá hôm nay
-});
+document.querySelector('.buttons button').classList.add('active');
 
 // Hoa rơi
 function createSnowflake() {
@@ -200,7 +196,24 @@ function updateClock() {
   const fullTime = `${h}:${m}:${s} | ${d}, ${date}/${month}/${year}`;
   document.getElementById('clock').textContent = fullTime;
   document.getElementById('fixedClock').textContent = fullTime;
+
+  // Theme
+  if (h >= 0 || h <= 21) {
+    document.body.style.background = getComputedStyle(document.documentElement).getPropertyValue('--bg-dark');
+    document.body.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-dark');
+    document.querySelectorAll('button').forEach(btn => {
+      btn.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--button-dark');
+      btn.style.color = getComputedStyle(document.documentElement).getPropertyValue('--button-dark');
+    });
+  } else {
+    document.body.style.background = getComputedStyle(document.documentElement).getPropertyValue('--bg-light');
+    document.body.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-light');
+    document.querySelectorAll('button').forEach(btn => {
+      btn.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--button-light');
+      btn.style.color = getComputedStyle(document.documentElement).getPropertyValue('--button-light');
+    });
   }
+}
 setInterval(updateClock, 1000);
 updateClock();
 </script>
