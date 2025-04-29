@@ -160,12 +160,12 @@
 <script>
 // Đổi video
 function playVideo(videoId, btn) {
-  const iframe = document.getElementById('videoPlayer');
-  iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0`;
-  document.addEventListener("DOMContentLoaded", () => {
+ document.addEventListener("DOMContentLoaded", () => {
   const defaultBtn = document.querySelector('.buttons button');
-  playVideo('rS9CAtTpnVo', defaultBtn); // ID video bóng đá hôm nay
+  const defaultVideoId = defaultBtn.getAttribute('onclick').match(/'([^']+)'/)[1];
+  playVideo(defaultVideoId, defaultBtn);
 });
+
   btn.classList.add('active');
 }
 document.querySelector('.buttons button').classList.add('active');
