@@ -2,125 +2,220 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>⚽ Live Bóng Đá Việt Nam ⚽</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chọn Livestream YouTube</title>
   <style>
-    body {
-      background-color: black;
-      color: white;
-      text-align: center;
-      font-family: Arial, sans-serif;
-      padding: 20px;
+    :root {
+      --bg-dark: linear-gradient(135deg, #141e30, #243b55);
+      --bg-light: linear-gradient(135deg, #dce35b, #45b649);
+      --text-dark: white;
+      --text-light: black;
+      --button-dark: #00c6ff;
+      --button-light: #2c3e50;
     }
-    iframe {
-      margin-top: 20px;
-      width: 720px;
-      height: 405px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-dark);
+      overflow-x: hidden;
+      min-height: 100vh;
+      transition: all 0.5s ease;
+    }
+    .header-wrapper {
+      overflow: hidden;
+      white-space: nowrap;
+      width: 100%;
+      height: 40px;
+      margin: 10px 0;
+      position: relative;
+    }
+    .header {
+      display: inline-block;
+      position: absolute;
+      animation: marquee 15s linear infinite;
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px #000;
+    }
+    @keyframes marquee {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    button {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid var(--button-dark);
+      padding: 8px 16px;
+      border-radius: 20px;
+      color: var(--button-dark);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      background: var(--button-dark);
+      color: white;
+      font-weight: bold;
+    }
+    button.active {
+      background: rgba(255, 0, 0, 0.1);
+      color: red;
+      font-weight: bold;
+      border-color: red;
+    }
+       .video-container {
+      position: relative;
+      z-index: 5;
+      width: 85%;
+      max-width: 960px;
+      margin: 5px auto;
+      background: black;
+      overflow: hidden;
+      border-radius: 12px;
+      aspect-ratio: 16/9;
+    }
+    .video-container iframe {
+      width: 100%;
+      height: 100%;
       border: none;
+    }
+    @media (max-width: 768px) {
+      .video-container {
+        width: 95%;
+      }
+    }
+    .snow-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .snowflake {
+      position: absolute;
+      font-size: 1.2em;
+      user-select: none;
+      animation-name: fall;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+    }
+    @keyframes fall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+    }
+    .clock {
+      position: fixed;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: bold;
+      color: var(--text-dark);
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+      z-index: 5;
     }
   </style>
 </head>
 <body>
 
-<h1>⚽ Live Bóng Đá Việt Nam ⚽</h1>
-<div id="video-container">
-  <p>Đang tìm trận bóng đá phát trực tiếp...</p>
+<div class="snow-container" id="snow"></div>
+
+<div class="header-wrapper">
+  <div class="header">
+    🎥 Chọn Kênh bóng đá | <span id="clock">--:--:-- | --/--/----</span>
+  </div>
 </div>
 
+<div class="buttons">
+  <button onclick="playVideo('JCM0NIY4Yc4', this)">Cuồng thể thao</button>
+  <button onclick="playVideo('rS9CAtTpnVo', this)">Bóng đá hôm nay</button>
+</div>
+
+<div class="video-container">
+  <iframe 
+    id="videoPlayer"
+    src="https://www.youtube.com/embed/QBvmeQr7Pbo?autoplay=1&mute=0"
+    allow="autoplay; encrypted-media"
+    allowfullscreen>
+  </iframe>
+</div>
+
+<div class="clock" id="fixedClock"></div>
+
 <script>
-const apiKey = 'AIzaSyDUaEAdkfCAJQu1iUQQyd16uAYYWfjTX_8'; // 🔥 API KEY của bạn
-const channelIds = [
-  'UCk2YNy1wJKVxY_wJkaMf2Ow', // VTV Thể Thao
-  'UCIsvJ6JTXsI6U7rTZg4sRVA', // Next Sports
-  'UCmC9o_WLP-QA1z7nEN7aB0g', // VFF Channel
-  'UCzXAFyJydzWfF3Q5kSEu1-A', // On Sports
-  'UCRPL92H_gYVBvr_7RWopL5g', // FPT Play Sports
-  'UCg1WWbGldxzkOIFFp0miE_g'  // SCTV15
-  'UC-3jRPfMG9kJfv9IpkM0Y9w', // Kênh Bóng Đá Việt Nam 2023
-  'UCOcXQh1Tz9WZzqVaki-MP3w', // Bóng Đá Hôm Nay 456
-];
-let currentVideoId = "";
-
-async function fetchLiveVideo() {
-  try {
-    for (const channelId of channelIds) {
-      const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&eventType=live&type=video&maxResults=1&key=${apiKey}`;
-      const response = await fetch(apiUrl);
-      const data = await response.json();
-
-      if (data.items && data.items.length > 0) {
-        const videoId = data.items[0].id.videoId;
-        if (currentVideoId !== videoId) {
-          console.log("Đã tìm thấy video live mới:", videoId);
-          currentVideoId = videoId;
-          loadVideo(videoId);
-        } else {
-          console.log("Đã có live, không cần đổi.");
-        }
-        return; // Dừng tìm tiếp nếu đã có live
-      }
-    }
-    // Nếu quét hết mà không có live
-    if (!currentVideoId) {
-      document.getElementById('video-container').innerHTML = `
-        <p>🔴 Hiện tại kênh chưa phát trực tiếp!<br>Mời bạn quay lại sau nhé!</p>
-      `;
-    }
-  } catch (error) {
-    console.error('Lỗi fetch:', error);
-    document.getElementById('video-container').innerHTML = '<p>❗ Lỗi khi tìm video.</p>';
-  }
+// Đổi video
+function playVideo(videoId, btn) {
+  const iframe = document.getElementById('videoPlayer');
+  iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0`;
+  document.querySelectorAll('.buttons button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
 }
+document.querySelector('.buttons button').classList.add('active');
 
-function loadVideo(videoId) {
-  const iframeHtml = `
-    <iframe id="ytplayer" width="720" height="405"
-      src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&enablejsapi=1"
-      frameborder="0" allowfullscreen allow="autoplay"></iframe>
-  `;
-  document.getElementById('video-container').innerHTML = iframeHtml;
-
-  // Khởi động kiểm tra nếu video die
-  setTimeout(initYouTubeAPI, 2000);
+// Hoa rơi
+function createSnowflake() {
+  const snowContainer = document.getElementById('snow');
+  const snowflake = document.createElement('div');
+  snowflake.classList.add('snowflake');
+  snowflake.textContent = ['❄️','🌸','🍂','💮','🌼','🍁','🌺','🌹'][Math.floor(Math.random() * 8)];
+  snowflake.style.left = Math.random() * window.innerWidth + 'px';
+  snowflake.style.animationDuration = (5 + Math.random() * 5) + 's';
+  snowflake.style.fontSize = (10 + Math.random() * 20) + 'px';
+  snowflake.style.color = `hsl(${Math.random() * 360}, 100%, 80%)`;
+  snowContainer.appendChild(snowflake);
+  setTimeout(() => snowflake.remove(), 10000);
 }
+setInterval(createSnowflake, 300);
 
-function initYouTubeAPI() {
-  if (typeof YT === 'undefined') {
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    document.body.appendChild(tag);
+// Đồng hồ hiện giờ + Theme tự động
+function updateClock() {
+  const now = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"}));
+  const h = now.getHours().toString().padStart(2, '0');
+  const m = now.getMinutes().toString().padStart(2, '0');
+  const s = now.getSeconds().toString().padStart(2, '0');
+  const days = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  const d = days[now.getDay()];
+  const date = now.getDate().toString().padStart(2, '0');
+  const month = (now.getMonth() + 1).toString().padStart(2, '0');
+  const year = now.getFullYear();
+  
+  const fullTime = `${h}:${m}:${s} | ${d}, ${date}/${month}/${year}`;
+  document.getElementById('clock').textContent = fullTime;
+  document.getElementById('fixedClock').textContent = fullTime;
+
+  // Theme
+  if (h >= 0 || h <= 21) {
+    document.body.style.background = getComputedStyle(document.documentElement).getPropertyValue('--bg-dark');
+    document.body.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-dark');
+    document.querySelectorAll('button').forEach(btn => {
+      btn.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--button-dark');
+      btn.style.color = getComputedStyle(document.documentElement).getPropertyValue('--button-dark');
+    });
   } else {
-    onYouTubeIframeAPIReady();
-  }
-}
-
-function onYouTubeIframeAPIReady() {
-  if (typeof YT.Player !== 'undefined') {
-    new YT.Player('ytplayer', {
-      events: {
-        'onStateChange': onPlayerStateChange
-      }
+    document.body.style.background = getComputedStyle(document.documentElement).getPropertyValue('--bg-light');
+    document.body.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-light');
+    document.querySelectorAll('button').forEach(btn => {
+      btn.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--button-light');
+      btn.style.color = getComputedStyle(document.documentElement).getPropertyValue('--button-light');
     });
   }
 }
-
-function onPlayerStateChange(event) {
-  if (event.data === YT.PlayerState.ENDED || event.data === YT.PlayerState.UNSTARTED) {
-    console.log("Video đã kết thúc hoặc die, tìm live mới...");
-    currentVideoId = "";
-    fetchLiveVideo();
-  }
-}
-
-// Gọi lần đầu
-fetchLiveVideo();
-
-// Cứ 30 phút kiểm tra 1 lần nếu đang không live
-setInterval(() => {
-  if (!currentVideoId) {
-    console.log("Không có live, kiểm tra lại...");
-    fetchLiveVideo();
-  }
-}, 1800000); // 30 phút
+setInterval(updateClock, 1000);
+updateClock();
 </script>
 
 </body>
